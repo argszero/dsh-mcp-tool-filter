@@ -1,0 +1,38 @@
+# The @argszero/dsh-mcp-tool-filter bundle patch: mount and go.
+#
+# `dsh-mcp-client` registers every tool a connected server lists, unconditionally
+# (packages/mcp/mcp-client/src/tools.ts, the swap loop at the end of syncTools):
+#
+#   for (const [publicName, definition] of definitions) {
+#     disposers.set(publicName, ctx.tools.register(definition))
+#   }
+#
+# `registrationFailure` decides what a namespace collision does; nothing decides
+# what a tool the deployment does not want does. A server advertising 161 tools
+# puts 161 tools and their full JSON schemas into every request that assembles
+# the tool surface. Reported as #9385.
+#
+# `ctx.tools.restrict()` is not the answer three ways over: it requires a scoped
+# context (on a global one it throws, by design), it throws on names that a
+# changed tools/list no longer produces, and it only masks a definition that stays
+# registered and introspectable. The seam this plugin uses is register itself,
+# shadowed on the tools service *instance* — the same instance-shadow that works
+# for `subprocess` — so a caller that reaches the registry by name lookup
+# (`syncTools` does exactly that) is seen.
+#
+# MOUNT THIS ROW BEFORE THE mcp-client ROWS. A loader mounts entries in the order
+# a profile lists them, and mcp-client registers its first generation while it
+# starts. A filter mounted afterwards has missed that generation, and a plugin
+# cannot unregister another plugin's tools; the mount warns and the snapshot's
+# `coverage.preExisting` names what it was too late for. Everything registered
+# after the shadow is installed is filtered normally.
+#
+# `inject` is declared here as well as in the plugin because the entry row is what
+# a profile composes: without the tools service the plugin is held, and an entry
+# that activates without one would report coverage it never observed.
+
+- insert:
+    - id: mcp-tool-filter
+      name: '@argszero/dsh-mcp-tool-filter'
+      inject:
+        - tools

@@ -1,0 +1,77 @@
+{
+  "name": "@argszero/dsh-mcp-tool-filter",
+  "description": "`dsh-mcp-client` registers every tool a connected MCP server lists, unconditionally, so a server advertising 161 tools puts 161 tools and their full JSON schemas into every request that assembles the tool surface (reported as #9385). `ctx.tools.restrict()` is not the answer: it needs a scoped context, it throws on names that a changed `tools/list` no longer produces, and it only masks a definition that stays registered and introspectable. This plugin shadows `register` on the tools service instance — the one seam that keeps a tool out of the registry entirely — and, for the servers a deployment names, forwards a registration only when the public leaf name is on that server's allowlist. Unlisted servers pass through untouched; an empty allowlist registers nothing from its server; `observe` mode counts what would be kept out without removing anything; the snapshot reports the kept-out names, the configured servers that never matched, and the allowlist entries that never matched anything. Zero runtime dependencies, fail-open, no sandbox changes.",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/**/*.js",
+    "lib/types/**/*.d.ts",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/argszero/dsh-mcp-tool-filter.git"
+  },
+  "homepage": "https://github.com/argszero/dsh-mcp-tool-filter#readme",
+  "bugs": {
+    "url": "https://github.com/argszero/dsh-mcp-tool-filter/issues"
+  },
+  "keywords": [
+    "cordis",
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "mcp",
+    "model-context-protocol",
+    "tools",
+    "tool-registry",
+    "filter",
+    "allowlist",
+    "token-budget",
+    "context-window"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2 || >=4.0.5-alpha.1 <5",
+    "@deepseek-ai/dsh-tools": ">=0.1.7-rc.2 <0.2.0 || >=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.2 <0.3.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@types/node": "^24.19.1",
+    "semver": "^7.8.5",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "pretest": "tsc",
+    "test": "node --test \"test/*.spec.mjs\"",
+    "test:inject": "node scripts/inject-defects.mjs",
+    "probe:lines": "bash scripts/probe-lines.sh",
+    "probe:naming": "node scripts/naming-crosscheck.mjs",
+    "prepublishOnly": "tsc"
+  },
+  "engines": {
+    "node": "^22.19 || >=24"
+  }
+}
