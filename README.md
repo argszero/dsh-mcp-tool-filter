@@ -43,8 +43,10 @@ and it is not the same thing three ways over:
 ## Install
 
 ```sh
-npm install @argszero/dsh-mcp-tool-filter
+dsh plugin --profile <profile> add github:argszero/dsh-mcp-tool-filter
 ```
+
+The git spec installs the tree this README describes; `npm install` on its own never attaches a plugin to a profile — `dsh plugin add` is what writes the row that makes it load.
 
 The bundle patch inserts one row. **List it before the `mcp-client` rows** — see
 [Mount before the servers](#mount-before-the-servers) below.
